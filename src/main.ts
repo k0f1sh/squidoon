@@ -269,6 +269,41 @@ function updateCameraTarget() {
   controls.target.copy(camera.position).add(direction);
 }
 
+// Mobile controls state
+const touchControls = {
+  up: false,
+  down: false,
+  left: false,
+  right: false
+};
+
+// Add touch event listeners
+document.querySelector('.shoot-button')?.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  shootSphere();
+});
+
+document.querySelectorAll('.move-button').forEach(button => {
+  button.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const target = e.currentTarget as HTMLElement;
+    if (target.classList.contains('move-up')) touchControls.up = true;
+    if (target.classList.contains('move-down')) touchControls.down = true;
+    if (target.classList.contains('move-left')) touchControls.left = true;
+    if (target.classList.contains('move-right')) touchControls.right = true;
+  });
+
+  button.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    const target = e.currentTarget as HTMLElement;
+    if (target.classList.contains('move-up')) touchControls.up = false;
+    if (target.classList.contains('move-down')) touchControls.down = false;
+    if (target.classList.contains('move-left')) touchControls.left = false;
+    if (target.classList.contains('move-right')) touchControls.right = false;
+  });
+});
+
+// Modify updateCamera function to include touch controls
 function updateCamera() {
   const moveSpeed = cameraSpeed;
 
@@ -282,16 +317,17 @@ function updateCamera() {
 
   const moveDirection = new THREE.Vector3();
 
-  if (keysPressed['w']) {
+  // Keyboard controls
+  if (keysPressed['w'] || touchControls.up) {
     moveDirection.add(forward);
   }
-  if (keysPressed['s']) {
+  if (keysPressed['s'] || touchControls.down) {
     moveDirection.sub(forward);
   }
-  if (keysPressed['a']) {
+  if (keysPressed['a'] || touchControls.left) {
     moveDirection.sub(right);
   }
-  if (keysPressed['d']) {
+  if (keysPressed['d'] || touchControls.right) {
     moveDirection.add(right);
   }
 
