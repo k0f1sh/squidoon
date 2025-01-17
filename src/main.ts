@@ -323,7 +323,7 @@ cubeTexture.wrapT = THREE.ClampToEdgeWrapping;
 
 const loader = new GLTFLoader();
 loader.load(
-  '/squidoon_stage.glb',
+  'squidoon_stage.glb',
   (gltf: GLTF) => {
     console.log('Model loaded successfully:', gltf);
 
