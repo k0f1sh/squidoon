@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader, GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import './style.css';
-import stageUrl from '../public/squidoon_stage.glb?url';
+import stageUrl from './squidoon_stage.glb?url';
 
 function createGridTexture(): THREE.CanvasTexture {
   const size = 2048;
