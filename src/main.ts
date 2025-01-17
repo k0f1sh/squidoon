@@ -169,7 +169,28 @@ function updateMinimap(texture: THREE.CanvasTexture) {
   minimapContainer.appendChild(canvas);
 }
 
-// Update drawImpactCircle to refresh minimap
+// Add current color state
+let currentColor = '#ff5500';
+
+// Color selection handling
+document.querySelectorAll('.color-button').forEach(button => {
+  button.addEventListener('click', (e) => {
+    const target = e.currentTarget as HTMLElement;
+    const color = target.dataset.color;
+    if (color) {
+      currentColor = color;
+      // Update active state
+      document.querySelectorAll('.color-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      target.classList.add('active');
+      // Update sphere material
+      sphereMaterial.color.setStyle(color);
+    }
+  });
+});
+
+// Update drawImpactCircle to use current color
 function drawImpactCircle(texture: THREE.CanvasTexture, uv: THREE.Vector2) {
   const canvas = texture.image;
   const ctx = canvas.getContext('2d')!;
@@ -180,7 +201,7 @@ function drawImpactCircle(texture: THREE.CanvasTexture, uv: THREE.Vector2) {
   const mainRadius = 30;
   ctx.beginPath();
   ctx.arc(x, y, mainRadius, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255, 60, 0, 1)';
+  ctx.fillStyle = currentColor;
   ctx.fill();
 
   const splatCount = 12;
@@ -195,7 +216,7 @@ function drawImpactCircle(texture: THREE.CanvasTexture, uv: THREE.Vector2) {
 
     ctx.beginPath();
     ctx.arc(splatX, splatY, splatRadius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 60, 0, 1)';
+    ctx.fillStyle = currentColor;
     ctx.fill();
 
     if (Math.random() < 0.5) {
@@ -206,14 +227,12 @@ function drawImpactCircle(texture: THREE.CanvasTexture, uv: THREE.Vector2) {
 
       ctx.beginPath();
       ctx.arc(dropletX, dropletY, Math.random() * 3 + 4, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255, 60, 0, 1)';
+      ctx.fillStyle = currentColor;
       ctx.fill();
     }
   }
 
   texture.needsUpdate = true;
-
-  // Update minimap after drawing
   updateMinimap(texture);
 }
 
@@ -522,7 +541,10 @@ function clearAllPaint() {
     const material = object.material as THREE.MeshStandardMaterial;
     if (material.map) {
       if (object.name === 'Plane') {
-        material.map = createGridTexture();
+        const texture = createGridTexture();
+        material.map = texture;
+        // Update minimap with the new texture
+        updateMinimap(texture);
       } else if (object.name === 'Cube') {
         material.map = createCubeGridTexture();
       }

@@ -172,3 +172,28 @@ canvas {
   height: 200px;
   display: block;
 }
+
+.color-selector {
+  position: fixed;
+  bottom: 20px;
+  right: 120px;
+  z-index: 1000;
+  display: flex;
+  gap: 10px;
+}
+
+.color-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.color-button.active {
+  border-color: white;
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
