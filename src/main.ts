@@ -148,6 +148,28 @@ function shootSphere() {
   spheres.push({ mesh: sphere, velocity: velocity });
 }
 
+// Add minimap update function
+function updateMinimap(texture: THREE.CanvasTexture) {
+  const minimapContainer = document.querySelector('.minimap');
+  if (!minimapContainer) return;
+
+  // Remove existing canvas if any
+  const existingCanvas = minimapContainer.querySelector('canvas');
+  if (existingCanvas) {
+    existingCanvas.remove();
+  }
+
+  // Create a copy of the texture canvas
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d')!;
+  canvas.width = texture.image.width;
+  canvas.height = texture.image.height;
+  ctx.drawImage(texture.image, 0, 0);
+
+  minimapContainer.appendChild(canvas);
+}
+
+// Update drawImpactCircle to refresh minimap
 function drawImpactCircle(texture: THREE.CanvasTexture, uv: THREE.Vector2) {
   const canvas = texture.image;
   const ctx = canvas.getContext('2d')!;
@@ -155,7 +177,7 @@ function drawImpactCircle(texture: THREE.CanvasTexture, uv: THREE.Vector2) {
   const x = uv.x * canvas.width;
   const y = (1 - uv.y) * canvas.height;
 
-  const mainRadius = 50;
+  const mainRadius = 30;
   ctx.beginPath();
   ctx.arc(x, y, mainRadius, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(255, 60, 0, 1)';
@@ -190,6 +212,9 @@ function drawImpactCircle(texture: THREE.CanvasTexture, uv: THREE.Vector2) {
   }
 
   texture.needsUpdate = true;
+
+  // Update minimap after drawing
+  updateMinimap(texture);
 }
 
 function updateSpheres(deltaTime: number) {
@@ -415,11 +440,15 @@ loader.load(
       if (child instanceof THREE.Mesh) {
         // 床
         if (child.name === 'Plane') {
+          const texture = createGridTexture();
           child.material = new THREE.MeshStandardMaterial({
-            map: floorTexture,
+            map: texture,
             metalness: 0.2,
             roughness: 0.6,
           });
+
+          // Initialize minimap with the floor texture
+          updateMinimap(texture);
         }
         // キューブ
         else if (child.name === 'Cube') {
