@@ -277,13 +277,19 @@ const touchControls = {
   right: false
 };
 
-// Add touch event listeners
+// Add touch and click event listeners
 document.querySelector('.shoot-button')?.addEventListener('touchstart', (e) => {
   e.preventDefault();
   shootSphere();
 });
 
+document.querySelector('.shoot-button')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  shootSphere();
+});
+
 document.querySelectorAll('.move-button').forEach(button => {
+  // Touch events
   button.addEventListener('touchstart', (e) => {
     e.preventDefault();
     const target = e.currentTarget as HTMLElement;
@@ -294,6 +300,35 @@ document.querySelectorAll('.move-button').forEach(button => {
   });
 
   button.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    const target = e.currentTarget as HTMLElement;
+    if (target.classList.contains('move-up')) touchControls.up = false;
+    if (target.classList.contains('move-down')) touchControls.down = false;
+    if (target.classList.contains('move-left')) touchControls.left = false;
+    if (target.classList.contains('move-right')) touchControls.right = false;
+  });
+
+  // Mouse events
+  button.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const target = e.currentTarget as HTMLElement;
+    if (target.classList.contains('move-up')) touchControls.up = true;
+    if (target.classList.contains('move-down')) touchControls.down = true;
+    if (target.classList.contains('move-left')) touchControls.left = true;
+    if (target.classList.contains('move-right')) touchControls.right = true;
+  });
+
+  button.addEventListener('mouseup', (e) => {
+    e.preventDefault();
+    const target = e.currentTarget as HTMLElement;
+    if (target.classList.contains('move-up')) touchControls.up = false;
+    if (target.classList.contains('move-down')) touchControls.down = false;
+    if (target.classList.contains('move-left')) touchControls.left = false;
+    if (target.classList.contains('move-right')) touchControls.right = false;
+  });
+
+  // Handle mouse leaving the button while pressed
+  button.addEventListener('mouseleave', (e) => {
     e.preventDefault();
     const target = e.currentTarget as HTMLElement;
     if (target.classList.contains('move-up')) touchControls.up = false;
