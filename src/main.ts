@@ -200,7 +200,70 @@ document.querySelectorAll('.color-button').forEach(button => {
   });
 });
 
-// Update drawImpactCircle to use current color
+// Calculate and update color ratios
+function updateColorRatios(texture: THREE.CanvasTexture) {
+  const canvas = texture.image;
+  const ctx = canvas.getContext('2d')!;
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  const colors: { [key: string]: number } = {
+    '#ff5500': 0,
+    '#00ff00': 0,
+    '#0055ff': 0,
+    'white': 0
+  };
+
+  // Count pixels of each color
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+
+    if (r === 255 && g === 255 && b === 255) {
+      colors['white']++;
+    } else if (r === 255 && g === 85 && b === 0) {
+      colors['#ff5500']++;
+    } else if (r === 0 && g === 255 && b === 0) {
+      colors['#00ff00']++;
+    } else if (r === 0 && g === 85 && b === 255) {
+      colors['#0055ff']++;
+    }
+  }
+
+  // Calculate total pixels in the texture
+  const totalPixels = (canvas.width * canvas.height);
+
+  // Update ratio display
+  document.querySelectorAll('.ratio-bar').forEach(bar => {
+    const color = (bar.querySelector('.ratio-color') as HTMLElement).style.backgroundColor;
+    const hexColor = rgbToHex(color);
+    const ratio = (colors[hexColor] / totalPixels) * 100;
+
+    const fill = bar.querySelector('.ratio-fill') as HTMLElement;
+    const text = bar.querySelector('.ratio-text') as HTMLElement;
+
+    fill.style.width = `${ratio}%`;
+    text.textContent = `${ratio.toFixed(1)}%`;  // 小数点第1位まで表示
+  });
+}
+
+// Helper function to convert RGB to HEX
+function rgbToHex(rgb: string): string {
+  const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+  if (!match) return '#000000';
+
+  const r = parseInt(match[1]);
+  const g = parseInt(match[2]);
+  const b = parseInt(match[3]);
+
+  if (r === 255 && g === 85 && b === 0) return '#ff5500';
+  if (r === 0 && g === 255 && b === 0) return '#00ff00';
+  if (r === 0 && g === 85 && b === 255) return '#0055ff';
+  return '#ffffff';
+}
+
+// Update drawImpactCircle to not calculate ratios after drawing
 function drawImpactCircle(texture: THREE.CanvasTexture, uv: THREE.Vector2) {
   const canvas = texture.image;
   const ctx = canvas.getContext('2d')!;
@@ -243,7 +306,7 @@ function drawImpactCircle(texture: THREE.CanvasTexture, uv: THREE.Vector2) {
   }
 
   texture.needsUpdate = true;
-  updateMinimap(texture);
+  updateMinimap(texture);  // ミニマップの更新時に色の比率も計算されます
 }
 
 function updateSpheres(deltaTime: number) {
@@ -553,8 +616,8 @@ function clearAllPaint() {
       if (object.name === 'Plane') {
         const texture = createGridTexture();
         material.map = texture;
-        // Update minimap with the new texture
         updateMinimap(texture);
+        updateColorRatios(texture);
       } else if (object.name === 'Cube') {
         material.map = createCubeGridTexture();
       }
@@ -572,3 +635,14 @@ function clearAllPaint() {
 document.querySelector('.clear-button')?.addEventListener('click', clearAllPaint);
 
 animate();
+
+// Add update button event listener
+document.querySelector('.update-ratio-button')?.addEventListener('click', () => {
+  const plane = collisionObjects.find(obj => obj.name === 'Plane');
+  if (plane) {
+    const material = plane.material as THREE.MeshStandardMaterial;
+    if (material.map && material.map instanceof THREE.CanvasTexture) {
+      updateColorRatios(material.map);
+    }
+  }
+});

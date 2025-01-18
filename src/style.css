@@ -198,3 +198,78 @@ canvas {
   transform: scale(1.1);
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
 }
+
+.color-ratio {
+  position: fixed;
+  top: 240px;
+  left: 20px;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 4px;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  min-width: 200px;
+}
+
+.ratio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.ratio-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.update-ratio-button {
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.update-ratio-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.ratio-bar {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+  gap: 10px;
+}
+
+.ratio-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.ratio-value {
+  flex-grow: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.ratio-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.ratio-text {
+  min-width: 60px;
+  text-align: right;
+}
