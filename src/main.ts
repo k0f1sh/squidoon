@@ -186,6 +186,16 @@ document.querySelectorAll('.color-button').forEach(button => {
       target.classList.add('active');
       // Update sphere material
       sphereMaterial.color.setStyle(color);
+      // Update shoot button color
+      const shootButton = document.querySelector('.shoot-button') as HTMLElement;
+      if (shootButton) {
+        // Convert HEX to RGB
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        shootButton.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.6)`;
+        shootButton.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.8)`;
+      }
     }
   });
 });
