@@ -148,8 +148,27 @@ function shootSphere() {
   spheres.push({ mesh: sphere, velocity: velocity });
 }
 
-// Add minimap update function
-function updateMinimap(texture: THREE.CanvasTexture) {
+// Add minimap camera and renderer
+const minimapCamera = new THREE.OrthographicCamera(-15, 15, 15, -15, 1, 1000);
+minimapCamera.position.set(0, 100, 0);
+minimapCamera.lookAt(0, 0, 0);
+minimapCamera.up.set(0, 0, -1);
+
+const minimapRenderer = new THREE.WebGLRenderer({ antialias: true });
+minimapRenderer.setSize(200, 200);
+minimapRenderer.setPixelRatio(window.devicePixelRatio);
+
+// Add minimap update interval
+let lastMinimapUpdate = 0;
+const MINIMAP_UPDATE_INTERVAL = 1000; // 1 second in milliseconds
+
+// Replace updateMinimap function
+function updateMinimap(force: boolean = false) {
+  const currentTime = Date.now();
+  if (!force && currentTime - lastMinimapUpdate < MINIMAP_UPDATE_INTERVAL) {
+    return;
+  }
+
   const minimapContainer = document.querySelector('.minimap');
   if (!minimapContainer) return;
 
@@ -159,14 +178,13 @@ function updateMinimap(texture: THREE.CanvasTexture) {
     existingCanvas.remove();
   }
 
-  // Create a copy of the texture canvas
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d')!;
-  canvas.width = texture.image.width;
-  canvas.height = texture.image.height;
-  ctx.drawImage(texture.image, 0, 0);
+  // Add new renderer's canvas
+  minimapContainer.appendChild(minimapRenderer.domElement);
 
-  minimapContainer.appendChild(canvas);
+  // Render minimap view
+  minimapRenderer.render(scene, minimapCamera);
+
+  lastMinimapUpdate = currentTime;
 }
 
 // Add current color state
@@ -306,7 +324,7 @@ function drawImpactCircle(texture: THREE.CanvasTexture, uv: THREE.Vector2) {
   }
 
   texture.needsUpdate = true;
-  updateMinimap(texture);  // ミニマップの更新時に色の比率も計算されます
+  updateMinimap();  // ミニマップの更新時に色の比率も計算されます
 }
 
 function updateSpheres(deltaTime: number) {
@@ -540,7 +558,7 @@ loader.load(
           });
 
           // Initialize minimap with the floor texture
-          updateMinimap(texture);
+          updateMinimap(true);
         }
         // キューブ
         else if (child.name === 'Cube') {
@@ -555,13 +573,23 @@ loader.load(
 
     scene.add(gltf.scene);
 
-    // Adjust camera position based on model size
+    // Adjust camera positions based on model size
     const box = new THREE.Box3().setFromObject(gltf.scene);
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
 
     console.log('Model size:', size);
     console.log('Model center:', center);
+
+    // Adjust minimap camera to show the entire floor
+    const maxSize = Math.max(size.x, size.z);
+    minimapCamera.left = -maxSize * 0.6;
+    minimapCamera.right = maxSize * 0.6;
+    minimapCamera.top = maxSize * 0.6;
+    minimapCamera.bottom = -maxSize * 0.6;
+    minimapCamera.position.set(center.x, 100, center.z);
+    minimapCamera.lookAt(center.x, 0, center.z);
+    minimapCamera.updateProjectionMatrix();
 
     const maxDim = Math.max(size.x, size.y, size.z);
     const fov = camera.fov * (Math.PI / 180);
@@ -587,7 +615,7 @@ loader.load(
 // Animation loop
 let lastTime = 0;
 function animate(currentTime: number = 0) {
-  const deltaTime = (currentTime - lastTime) / 1000; // 秒単位のデルタタイム
+  const deltaTime = (currentTime - lastTime) / 1000;
   lastTime = currentTime;
 
   requestAnimationFrame(animate);
@@ -595,6 +623,7 @@ function animate(currentTime: number = 0) {
   updateSpheres(deltaTime);
   controls.update();
   renderer.render(scene, camera);
+  updateMinimap(); // This will now only update every 1 second
 }
 
 // Handle window resize
@@ -604,8 +633,11 @@ window.addEventListener('resize', () => {
 
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
-
   renderer.setSize(width, height);
+
+  // Update minimap size if needed
+  const minimapSize = Math.min(width, height) * 0.2; // 20% of the smallest screen dimension
+  minimapRenderer.setSize(minimapSize, minimapSize);
 });
 
 // Clear all paint function
@@ -616,7 +648,7 @@ function clearAllPaint() {
       if (object.name === 'Plane') {
         const texture = createGridTexture();
         material.map = texture;
-        updateMinimap(texture);
+        updateMinimap(true); // Force update
         updateColorRatios(texture);
       } else if (object.name === 'Cube') {
         material.map = createCubeGridTexture();
